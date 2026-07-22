@@ -1,0 +1,2 @@
+# Leitor-Código-de-Barras
+
