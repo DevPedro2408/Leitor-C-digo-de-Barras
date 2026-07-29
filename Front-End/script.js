@@ -74,6 +74,7 @@ function adicionarAoHTML() {
         ultimoElemento.append(btnEditar, btnExcluir)
 
         editar(elementos, btnEditar, indice)
+        excluir(elementos, btnExcluir, indice)
     })
 }
 
@@ -86,6 +87,9 @@ function editar(ele, botaoEditar, ind) {
     })
 }
 
-function excluir() {
-
+function excluir(ele, botaoExcluir, indice) {
+    botaoExcluir.addEventListener("click", () => {
+        produtos.splice(indice, 1)
+        adicionarAoHTML()
+    })
 }
