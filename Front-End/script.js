@@ -1,18 +1,3 @@
-//Leitor de código de barras
-const codeReader = new ZXing.BrowserBarcodeReader()
-
-codeReader.decodeFromVideoDevice(null, 'camera', (result, err) => {
-
-    if (result) {
-
-        let codigo = result.text
-
-        document.getElementById("codigo").value = codigo
-
-        console.log("Código detectado:", codigo)
-    }
-})
-
 let nomeProduto = document.getElementById("nomeProduto")
 let codigo = document.getElementById("codigo")
 let Quantidade = document.getElementById("Quantidade")
@@ -22,21 +7,38 @@ let adicionarProdutos = document.getElementById("adicionarProdutos")
 
 let produtos = []
 
+//Leitor de código de barras
+const codeReader = new ZXing.BrowserBarcodeReader()
+
+codeReader.decodeFromVideoDevice(null, 'camera', (result, err) => {
+
+    if (result) {
+
+        codigo.value = Number(result.text)
+
+        console.log("Código detectado:", codigo)
+    }
+})
+
 function cadastrar() {
 
-    let verificaoProdutos = produtos.find(elements => elements.codigo_barras === codigo.value)
+    let verificaoProdutos = produtos.findIndex(elements => elements.codigo_barras === Number(codigo.value)) 
 
-    if (verificaoProdutos) {
-        
+    if (verificaoProdutos === -1) {
+        produtos.push({
+            nome_produto: nomeProduto.value,
+            codigo_barras: Number(codigo.value),
+            Quantidade_produtos: Number(Quantidade.value),
+            preco_value: Number(preco.value)
+            }
+        )
+    } else {
+        produtos[verificaoProdutos].nome_produto = nomeProduto.value
+        produtos[verificaoProdutos].codigo_barras = Number(codigo.value)
+        produtos[verificaoProdutos].Quantidade_produtos = Number(Quantidade.value)
+        produtos[verificaoProdutos].preco_value = Number(preco.value)
     }
 
-    produtos.push({
-        nome_produto: nomeProduto.value,
-        codigo_barras: Number(codigo.value),
-        Quantidade_produtos: Number(Quantidade.value),
-        preco_value: Number(preco.value)
-        }
-    )
 
     inputsProdutos.forEach(inputs => inputs.value = "")
     console.log(produtos)
@@ -82,4 +84,8 @@ function editar(ele, botaoEditar, ind) {
         Quantidade.value = produtos[ind].Quantidade_produtos
         preco.value = produtos[ind].preco_value
     })
+}
+
+function excluir() {
+
 }
