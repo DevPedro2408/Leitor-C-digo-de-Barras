@@ -1,7 +1,7 @@
 let nomeProduto = document.getElementById("nomeProduto")
 let codigo = document.getElementById("codigo")
 let Quantidade = document.getElementById("Quantidade")
-let preco = document.getElementById("preco")
+let precoValue = document.getElementById("preco")
 let inputsProdutos = [...document.querySelectorAll(".inputsProdutos")]
 let adicionarProdutos = document.getElementById("adicionarProdutos")
 
@@ -20,29 +20,72 @@ codeReader.decodeFromVideoDevice(null, 'camera', (result, err) => {
     }
 })
 
-function cadastrar() {
-
+async function cadastrar() {
+    console.log("A função cadastrar foi executada!");
+    
     let verificaoProdutos = produtos.findIndex(elements => elements.codigo_barras === Number(codigo.value)) 
 
-    if (verificaoProdutos === -1) {
-        produtos.push({
-            nome_produto: nomeProduto.value,
-            codigo_barras: Number(codigo.value),
-            Quantidade_produtos: Number(Quantidade.value),
-            preco_value: Number(preco.value)
-            }
-        )
-    } else {
-        produtos[verificaoProdutos].nome_produto = nomeProduto.value
-        produtos[verificaoProdutos].codigo_barras = Number(codigo.value)
-        produtos[verificaoProdutos].Quantidade_produtos = Number(Quantidade.value)
-        produtos[verificaoProdutos].preco_value = Number(preco.value)
+    if (event) {
+        event.preventDefault()
     }
 
+    if (verificaoProdutos === -1) {
+        let produto = {
+            nome: nomeProduto.value,
+            codigo_barras: Number(codigo.value),
+            estoque: Number(Quantidade.value),
+            preco: Number(precoValue.value)
+        }
+       
+        produtos.push(produto)
+
+        await salvarProdutos(produto)
+
+    } else {
+        produtos[verificaoProdutos].nome = nomeProduto.value
+        produtos[verificaoProdutos].codigo_barras = Number(codigo.value)
+        produtos[verificaoProdutos].estoque = Number(Quantidade.value)
+        produtos[verificaoProdutos].preco = Number(precoValue.value)
+    }
 
     inputsProdutos.forEach(inputs => inputs.value = "")
+
     console.log(produtos)
+
     adicionarAoHTML()
+}
+
+async function salvarProdutos(produto) {
+
+    try {
+
+        const resposta = await fetch("http://localhost:3000/produtos", {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify(produto)
+        })
+
+        const dados = await resposta.json()
+
+        console.log("Resposta do backend:", dados)
+
+        if (!resposta.ok) {
+            console.log("Erro ao salvar:", dados)
+            return false
+        }
+
+        return true
+
+    } catch (erro) {
+
+        console.log("Erro ao conectar com o backend:", erro)
+
+        return false
+    }
 }
 
 function adicionarAoHTML() {
@@ -53,10 +96,10 @@ function adicionarAoHTML() {
         let addProdutos = document.createElement("tr")
         addProdutos.innerHTML = `
         <td>${cont++}</td>
-        <td>${elementos.nome_produto}</td>
+        <td>${elementos.nome}</td>
         <td>${elementos.codigo_barras}</td>
-        <td>${elementos.Quantidade_produtos}</td>
-        <td>${elementos.preco_value}</td>
+        <td>${elementos.estoque}</td>
+        <td>${elementos.preco}</td>
         <td></td>
         `
 
@@ -80,10 +123,10 @@ function adicionarAoHTML() {
 
 function editar(ele, botaoEditar, ind) {
     botaoEditar.addEventListener("click", () => {
-        nomeProduto.value = produtos[ind].nome_produto
+        nomeProduto.value = produtos[ind].nome
         codigo.value = produtos[ind].codigo_barras
-        Quantidade.value = produtos[ind].Quantidade_produtos
-        preco.value = produtos[ind].preco_value
+        Quantidade.value = produtos[ind].estoque
+        precoValue.value = produtos[ind].preco
     })
 }
 
