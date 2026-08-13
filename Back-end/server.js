@@ -1,33 +1,21 @@
 const express = require("express");
 const cors = require("cors");
-const db = require("./database")
+const db = require("./database");
 
 const app = express();
 
-// Permite receber JSON
 app.use(express.json());
-
-// Permite o frontend acessar o backend
 app.use(cors());
 
-db.serialize(() => {
-    db.run(`
-        CREATE TABLE IF NOT EXISTS produtos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome TEXT NOT NULL,
-            codigo_barras TEXT,
-            estoque INTEGER,
-            preco REAL
-        )
-        `)
-})
+app.use(express.static("../frontend"));
 
-// Rota de teste
 app.get("/", (req, res) => {
-    res.send("Servidor funcionando!");
+    res.sendFile("index.html", { root: "../frontend" });
 });
 
 app.post("/produtos", (req, res) => {
+
+    console.log("Produto recebido:", req.body);
 
     const { nome, codigo_barras, estoque, preco } = req.body;
 
@@ -43,12 +31,15 @@ app.post("/produtos", (req, res) => {
         function (erro) {
 
             if (erro) {
-                console.log("Erro ao salvar produto:", erro.message);
+
+                console.log("Erro ao salvar:", erro.message);
 
                 return res.status(500).json({
-                    erro: "Erro ao salvar produto"
+                    erro: erro.message
                 });
             }
+
+            console.log("Produto salvo! ID:", this.lastID);
 
             res.json({
                 mensagem: "Produto cadastrado com sucesso!",
@@ -58,7 +49,84 @@ app.post("/produtos", (req, res) => {
     );
 });
 
-// Inicia o servidor
+app.get("/produtos", (req, res) => {
+
+    const sql = "SELECT * FROM produtos";
+
+    db.all(sql, [], (erro, produtos) => {
+
+        if (erro) {
+
+            console.log("Erro ao buscar produtos:", erro.message);
+
+            return res.status(500).json({
+                erro: erro.message
+            });
+        }
+
+        res.json(produtos);
+    });
+});
+
+app.put("/produtos/:id", (req, res) => {
+
+    const id = req.params.id;
+
+    const { nome, codigo_barras, estoque, preco } = req.body;
+
+    const sql = `
+        UPDATE produtos
+        SET nome = ?,
+            codigo_barras = ?,
+            estoque = ?,
+            preco = ?
+        WHERE id = ?
+    `;
+
+    db.run(
+        sql,
+        [nome, codigo_barras, estoque, preco, id],
+        function (erro) {
+
+            if (erro) {
+
+                console.log("Erro ao editar produto:", erro.message);
+
+                return res.status(500).json({
+                    erro: erro.message
+                });
+            }
+
+            res.json({
+                mensagem: "Produto atualizado com sucesso!"
+            });
+        }
+    );
+});
+
+app.delete("/produtos/:id", (req, res) => {
+
+    const id = req.params.id;
+
+    const sql = "DELETE FROM produtos WHERE id = ?";
+
+    db.run(sql, [id], function (erro) {
+
+        if (erro) {
+
+            console.log("Erro ao excluir produto:", erro.message);
+
+            return res.status(500).json({
+                erro: erro.message
+            });
+        }
+
+        res.json({
+            mensagem: "Produto excluído com sucesso!"
+        });
+    });
+});
+
 app.listen(3000, () => {
     console.log("Servidor rodando em http://localhost:3000");
 });

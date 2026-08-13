@@ -7,6 +7,10 @@ let adicionarProdutos = document.getElementById("adicionarProdutos")
 
 let produtos = []
 
+let produtoEditando = null
+
+console.log("SCRIPT FOI CARREGADO")
+
 //Leitor de código de barras
 const codeReader = new ZXing.BrowserBarcodeReader()
 
@@ -21,39 +25,112 @@ codeReader.decodeFromVideoDevice(null, 'camera', (result, err) => {
 })
 
 async function cadastrar() {
-    console.log("A função cadastrar foi executada!");
-    
-    let verificaoProdutos = produtos.findIndex(elements => elements.codigo_barras === Number(codigo.value)) 
 
-    if (event) {
-        event.preventDefault()
+    const produto = {
+
+        nome: nomeProduto.value,
+
+        codigo_barras: Number(codigo.value),
+
+        estoque: Number(Quantidade.value),
+
+        preco: Number(precoValue.value)
+
     }
 
-    if (verificaoProdutos === -1) {
-        let produto = {
-            nome: nomeProduto.value,
-            codigo_barras: Number(codigo.value),
-            estoque: Number(Quantidade.value),
-            preco: Number(precoValue.value)
+
+    // EDITANDO
+    if (produtoEditando !== null) {
+
+        const resposta = await fetch(
+            `http://localhost:3000/produtos/${produtoEditando}`,
+            {
+                method: "PUT",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(produto)
+            }
+        )
+
+
+        const dados = await resposta.json()
+
+        console.log(dados)
+
+
+        // Atualiza o produto dentro do array
+        const indice = produtos.findIndex(
+            elemento => elemento.id === produtoEditando
+        )
+
+
+        if (indice !== -1) {
+
+            produtos[indice] = {
+                id: produtoEditando,
+                ...produto
+            }
+
         }
-       
-        produtos.push(produto)
 
-        await salvarProdutos(produto)
 
-    } else {
-        produtos[verificaoProdutos].nome = nomeProduto.value
-        produtos[verificaoProdutos].codigo_barras = Number(codigo.value)
-        produtos[verificaoProdutos].estoque = Number(Quantidade.value)
-        produtos[verificaoProdutos].preco = Number(precoValue.value)
+        produtoEditando = null
+
     }
 
-    inputsProdutos.forEach(inputs => inputs.value = "")
 
-    console.log(produtos)
+    // CADASTRANDO
+    else {
+
+        const resposta = await fetch(
+            "http://localhost:3000/produtos",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(produto)
+            }
+        )
+
+
+        const dados = await resposta.json()
+
+        console.log(dados)
+
+
+        // Adiciona o produto retornado pelo banco
+        produtos.push({
+            id: dados.id,
+            ...produto
+        })
+
+    }
+
+
+    inputsProdutos.forEach(input => {
+        input.value = ""
+    })
+
 
     adicionarAoHTML()
+
 }
+
+const botaoCadastrar = document.getElementById("botaoCadastrar")
+
+botaoCadastrar.addEventListener("click", function(event) {
+
+    event.preventDefault()
+
+    cadastrar()
+
+})
 
 async function salvarProdutos(produto) {
 
@@ -116,23 +193,75 @@ function adicionarAoHTML() {
         adicionarProdutos.appendChild(addProdutos)
         ultimoElemento.append(btnEditar, btnExcluir)
 
-        editar(elementos, btnEditar, indice)
-        excluir(elementos, btnExcluir, indice)
+        editar(elementos, btnEditar)
+        excluir(elementos, btnExcluir)
     })
 }
 
-function editar(ele, botaoEditar, ind) {
+function editar(ele, botaoEditar) {
     botaoEditar.addEventListener("click", () => {
-        nomeProduto.value = produtos[ind].nome
-        codigo.value = produtos[ind].codigo_barras
-        Quantidade.value = produtos[ind].estoque
-        precoValue.value = produtos[ind].preco
+        nomeProduto.value = produto.nome
+
+        codigo.value = produto.codigo_barras
+
+        Quantidade.value = produto.estoque
+
+        precoValue.value = produto.preco
+
+        produtoEditando = produto.id
+
+        console.log("Editando produto:", produto.id)
     })
 }
 
-function excluir(ele, botaoExcluir, indice) {
-    botaoExcluir.addEventListener("click", () => {
-        produtos.splice(indice, 1)
+function excluir(produto, botaoExcluir) {
+
+    botaoExcluir.addEventListener("click", async () => {
+
+        const confirmar = confirm(
+            `Deseja excluir o produto "${produto.nome}"?`
+        )
+
+        if (!confirmar) {
+            return
+        }
+
+
+        const resposta = await fetch(
+            `http://localhost:3000/produtos/${produto.id}`,
+            {
+                method: "DELETE"
+            }
+        )
+
+
+        const dados = await resposta.json()
+
+        console.log(dados)
+
+
+        produtos = produtos.filter(
+            elemento => elemento.id !== produto.id
+        )
+
+
         adicionarAoHTML()
+
     })
+
 }
+
+async function buscarProdutos() {
+
+    const resposta = await fetch("http://localhost:3000/produtos");
+
+    const dados = await resposta.json();
+
+    console.log("Produtos vindos do banco:", dados);
+
+    produtos = dados;
+
+    adicionarAoHTML();
+}
+
+buscarProdutos();
