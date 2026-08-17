@@ -218,9 +218,11 @@ function excluir(produto, botaoExcluir) {
 
     botaoExcluir.addEventListener("click", async () => {
 
-        const confirmar = confirm(
-            `Deseja excluir o produto "${produto.nome}"?`
-        )
+        // const confirmar = confirm(
+        //     `Deseja excluir o produto "${produto.nome}"?`
+        // )
+
+        const confirmar = true // Tirar
 
         if (!confirmar) {
             return
