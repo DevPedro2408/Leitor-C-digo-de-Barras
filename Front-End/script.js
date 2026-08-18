@@ -200,17 +200,18 @@ function adicionarAoHTML() {
 
 function editar(ele, botaoEditar) {
     botaoEditar.addEventListener("click", () => {
-        nomeProduto.value = produto.nome
+        nomeProduto.value = ele.nome
 
-        codigo.value = produto.codigo_barras
+        codigo.value = ele.codigo_barras
 
-        Quantidade.value = produto.estoque
+        Quantidade.value = ele.estoque
 
-        precoValue.value = produto.preco
+        precoValue.value = ele.preco
 
-        produtoEditando = produto.id
+        produtoEditando = ele.id
 
-        console.log("Editando produto:", produto.id)
+        console.log("Editando produto:", ele.id)
+        botaoCadastrar.innerHTML("Salvar Produto")
     })
 }
 
