@@ -5,14 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://unpkg.com/@zxing/library@latest"></script>
     <link rel="stylesheet" href="style.css">
-    <title>Document</title>
+    <title>Sistema TechnoExpress</title>
 </head>
 <body>
     <header>
+        <img src="assets/logoTecnoExpress.png" class="logo" alt="Logo">
         <h2>Estoque TechnoExpress</h2>
     </header>
 
     <div class="containerProduto">
+        <h2 class="cadastro">Cadastro</h2>
         <label for="nomeProduto">Nome do Produto</label>
         <input type="text" id="nomeProduto" class="inputsProdutos">
 
@@ -28,7 +30,10 @@
         <button type="button" id="botaoCadastrar" class="botaoCadastrar">Cadastrar</button>
     </div>
 
-    <video id="camera" width="300" height="200"></video>
+    <div class="containerCodigoBarras">
+        <h2 class="tituloCodBarras">Leitor de Código de Barras</h2>
+        <video id="camera" width="300" height="200"></video>
+    </div>
 
     <table>
         <thead>

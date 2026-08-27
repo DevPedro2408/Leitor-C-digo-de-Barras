@@ -174,7 +174,7 @@ function adicionarAoHTML() {
         addProdutos.innerHTML = `
         <td>${cont++}</td>
         <td>${elementos.nome}</td>
-        <td>${elementos.codigo_barras}</td>
+        <td>${Math.floor(elementos.codigo_barras)}</td>
         <td>${elementos.estoque}</td>
         <td>${elementos.preco}</td>
         <td></td>
